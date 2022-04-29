@@ -3,41 +3,14 @@ package marina.calculator
 import android.content.res.Configuration
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Button
-import android.widget.ImageButton
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
+import marina.calculator.databinding.ActivityMainBinding
 import java.lang.ArithmeticException
 
 class MainActivity : AppCompatActivity() {
 
-    private var switchModeButton: ImageButton? = null
-
-    private var calcResult: TextView? = null
-
-    // Digit buttons
-    private var digit0: Button? = null
-    private var digit1: Button? = null
-    private var digit2: Button? = null
-    private var digit3: Button? = null
-    private var digit4: Button? = null
-    private var digit5: Button? = null
-    private var digit6: Button? = null
-    private var digit7: Button? = null
-    private var digit8: Button? = null
-    private var digit9: Button? = null
-
-    // Operator buttons
-    private var divisionButton: Button? = null
-    private var multiplyButton: Button? = null
-    private var minusButton: Button? = null
-    private var plusButton: Button? = null
-    private var equalButton: Button? = null
-
-    // Other buttons
-    private var clearButton: Button? = null
-    private var dotButton: Button? = null
+    lateinit var binding: ActivityMainBinding
 
     // Flags
     private var lastNumeric: Boolean = false
@@ -49,75 +22,44 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        switchModeButton = findViewById(R.id.switchModeButton)
-        switchModeButton?.setOnClickListener { setMode() }
+        binding.switchModeButton.setOnClickListener { setMode() }
 
         setSwitchModeButtonIcon()
 
-        calcResult = findViewById(R.id.calcResult)
+        binding.button0.setOnClickListener { onDigit(0) }
+        binding.button1.setOnClickListener { onDigit(1) }
+        binding.button2.setOnClickListener { onDigit(2) }
+        binding.button3.setOnClickListener { onDigit(3) }
+        binding.button4.setOnClickListener { onDigit(4) }
+        binding.button5.setOnClickListener { onDigit(5) }
+        binding.button6.setOnClickListener { onDigit(6) }
+        binding.button7.setOnClickListener { onDigit(7) }
+        binding.button8.setOnClickListener { onDigit(8) }
+        binding.button9.setOnClickListener { onDigit(9) }
 
-        digit0 = findViewById(R.id.button0)
-        digit0?.setOnClickListener { onDigit(0) }
+        binding.buttonDivide.setOnClickListener { onOperator("÷") }
+        binding.buttonMultiply.setOnClickListener { onOperator("×") }
+        binding.buttonSubtract.setOnClickListener { onOperator("-") }
+        binding.buttonAdd.setOnClickListener { onOperator("+") }
 
-        digit1 = findViewById(R.id.button1)
-        digit1?.setOnClickListener { onDigit(1) }
+        binding.buttonResult.setOnClickListener { onCalculate() }
 
-        digit2 = findViewById(R.id.button2)
-        digit2?.setOnClickListener { onDigit(2) }
+        binding.buttonClear.setOnClickListener { onReset() }
 
-        digit3 = findViewById(R.id.button3)
-        digit3?.setOnClickListener { onDigit(3) }
-
-        digit4 = findViewById(R.id.button4)
-        digit4?.setOnClickListener { onDigit(4) }
-
-        digit5 = findViewById(R.id.button5)
-        digit5?.setOnClickListener { onDigit(5) }
-
-        digit6 = findViewById(R.id.button6)
-        digit6?.setOnClickListener { onDigit(6) }
-
-        digit7 = findViewById(R.id.button7)
-        digit7?.setOnClickListener { onDigit(7) }
-
-        digit8 = findViewById(R.id.button8)
-        digit8?.setOnClickListener { onDigit(8) }
-
-        digit9 = findViewById(R.id.button9)
-        digit9?.setOnClickListener { onDigit(9) }
-
-        divisionButton = findViewById(R.id.buttonDivide)
-        divisionButton?.setOnClickListener { onOperator("÷") }
-
-        multiplyButton = findViewById(R.id.buttonMultiply)
-        multiplyButton?.setOnClickListener { onOperator("×") }
-
-        minusButton = findViewById(R.id.buttonSubtract)
-        minusButton?.setOnClickListener { onOperator("-") }
-
-        plusButton = findViewById(R.id.buttonAdd)
-        plusButton?.setOnClickListener { onOperator("+") }
-
-        equalButton = findViewById(R.id.buttonResult)
-        equalButton?.setOnClickListener { onCalculate() }
-
-        clearButton = findViewById(R.id.buttonClear)
-        clearButton?.setOnClickListener { onReset() }
-
-        dotButton = findViewById(R.id.buttonDot)
-        dotButton?.setOnClickListener { onDecimalPoint() }
+        binding.buttonDot.setOnClickListener { onDecimalPoint() }
     }
 
     private fun onDigit(num: Int) {
-        calcResult?.append("$num")
+        binding.calcResult.append("$num")
         lastNumeric = true
         lastDot = false
     }
 
     private fun onReset() {
-        calcResult?.text = ""
+        binding.calcResult.text = ""
         firstNum = 0.0F
         secondNum = 0.0F
         inputOperator = ""
@@ -128,38 +70,36 @@ class MainActivity : AppCompatActivity() {
     private fun onDecimalPoint() {
         if (!lastNumeric || lastDot) return
 
-        calcResult?.text?.let {
-            val parts = it.split(Regex("(\\+|×|-|÷)"))
+        val parts = binding.calcResult.text.split(Regex("(\\+|×|-|÷)"))
 
-            if (parts.size == 1 && parts[0].contains(".")) {
-                return
-            }
-
-            if (parts.size == 2 && parts[1].contains(".")) {
-                return
-            }
-
-            calcResult?.append(".")
-            lastNumeric = false
-            lastDot = true
+        if (parts.size == 1 && parts[0].contains(".")) {
+            return
         }
+
+        if (parts.size == 2 && parts[1].contains(".")) {
+            return
+        }
+
+        binding.calcResult.append(".")
+        lastNumeric = false
+        lastDot = true
     }
 
     private fun onOperator(operator: String) {
-        calcResult?.text?.let {
-            if (it.isEmpty() && operator == "-") {
-                calcResult?.append(operator)
+        val inputValue = binding.calcResult.text
 
-                return
-            }
+        if (inputValue.isEmpty() && operator == "-") {
+            binding.calcResult.append(operator)
 
-            if (lastNumeric && !isOperatorAdded("$it")) {
-                inputOperator = operator
-                firstNum = "$it".toFloat()
-                calcResult?.append(operator)
-                lastNumeric = false
-                lastDot = false
-            }
+            return
+        }
+
+        if (lastNumeric && !isOperatorAdded("$inputValue")) {
+            inputOperator = operator
+            firstNum = "$inputValue".toFloat()
+            binding.calcResult.append(operator)
+            lastNumeric = false
+            lastDot = false
         }
     }
 
@@ -173,35 +113,34 @@ class MainActivity : AppCompatActivity() {
     private fun onCalculate() {
         if (!lastNumeric || inputOperator.isEmpty()) return
 
-        calcResult?.text?.let { value ->
-            val lastIndexOfFirstNum = removeZeroAfterDot("$firstNum").lastIndex
+        val lastIndexOfFirstNum = removeZeroAfterDot("$firstNum").lastIndex
+        val inputValue = binding.calcResult.text
 
-            secondNum = "$value".substring(lastIndexOfFirstNum + 2, value.length).toFloat()
+        secondNum = "$inputValue".substring(lastIndexOfFirstNum + 2, inputValue.length).toFloat()
 
-            if (secondNum == 0.0F && inputOperator == "÷") {
-                Toast.makeText(this, "Impossible to divide by zero!", Toast.LENGTH_SHORT).show()
+        if (secondNum == 0.0F && inputOperator == "÷") {
+            Toast.makeText(this, "Impossible to divide by zero!", Toast.LENGTH_SHORT).show()
 
-                return
+            return
+        }
+
+        try {
+            var result = 0.0F
+
+            when (inputOperator) {
+                "-" -> result = firstNum - secondNum
+                "+" -> result = firstNum + secondNum
+                "÷" -> result = firstNum / secondNum
+                "×" -> result = firstNum * secondNum
             }
 
-            try {
-                var result = 0.0F
+            onReset()
+            firstNum = result
+            lastNumeric = true
 
-                when (inputOperator) {
-                    "-" -> result = firstNum - secondNum
-                    "+" -> result = firstNum + secondNum
-                    "÷" -> result = firstNum / secondNum
-                    "×" -> result = firstNum * secondNum
-                }
-
-                onReset()
-                firstNum = result
-                lastNumeric = true
-
-                calcResult?.text = removeZeroAfterDot("$result")
-            } catch (e: ArithmeticException) {
-                e.printStackTrace()
-            }
+            binding.calcResult.text = removeZeroAfterDot("$result")
+        } catch (e: ArithmeticException) {
+            e.printStackTrace()
         }
     }
 
@@ -218,10 +157,10 @@ class MainActivity : AppCompatActivity() {
     private fun setSwitchModeButtonIcon() {
         when (getCurrentMode()) {
             Configuration.UI_MODE_NIGHT_YES -> {
-                switchModeButton?.setImageResource(R.drawable.ic_sun)
+                binding.switchModeButton.setImageResource(R.drawable.ic_sun)
             }
             Configuration.UI_MODE_NIGHT_NO -> {
-                switchModeButton?.setImageResource(R.drawable.ic_moon)
+                binding.switchModeButton.setImageResource(R.drawable.ic_moon)
             }
         }
     }
